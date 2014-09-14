@@ -16,15 +16,15 @@ import javax.swing.JPanel;
 import nz.ac.aut.knights.visual.graph.api.GraphControl;
 import nz.ac.aut.knights.visual.graph.api.GraphMessage;
 import nz.ac.aut.knights.visual.graph.gui.GraphShape;
-import static nz.ac.aut.knights.visual.graph.api.GraphModelCommands.*;
+import static nz.ac.aut.knights.visual.graph.api.GraphModelCommand.*;
 
 /**
  *
  * @author michael
  */
 public class VertexSelectDialog extends JDialog{
-    private List<JCheckBox> checkBoxes;
-    private String retCommand;
+    private final List<JCheckBox> checkBoxes;
+    private final String retCommand;
     public VertexSelectDialog(JFrame parent, List<GraphShape> vertices,
             String retCommand, String title){
         super(parent);

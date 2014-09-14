@@ -8,7 +8,7 @@ package nz.ac.aut.knights.visual.graph.api;
  *
  * @author michael
  */
-public enum GraphViewCommands {
+public enum GraphViewCommand {
     VERTEX_LIST, 
     VERTEX_NUM, 
     VERTEX_UPDATE, 

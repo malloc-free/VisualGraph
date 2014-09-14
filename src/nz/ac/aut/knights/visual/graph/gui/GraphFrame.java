@@ -25,8 +25,8 @@ import nz.ac.aut.knights.visual.graph.api.GraphAbstractFrame;
 import nz.ac.aut.knights.visual.graph.api.GraphControl;
 import nz.ac.aut.knights.visual.graph.api.GraphControlListener;
 import nz.ac.aut.knights.visual.graph.api.GraphMessage;
-import static nz.ac.aut.knights.visual.graph.api.GraphViewCommands.*;
-import static nz.ac.aut.knights.visual.graph.api.GraphModelCommands.*;
+import static nz.ac.aut.knights.visual.graph.api.GraphViewCommand.*;
+import static nz.ac.aut.knights.visual.graph.api.GraphModelCommand.*;
 import nz.ac.aut.knights.visual.graph.gui.panel.GraphEdge;
 import nz.ac.aut.knights.visual.graph.gui.panel.GraphVertex;
 import nz.ac.aut.knights.visual.graph.gui.panel.GraphVisualPanel.MenuAction;
@@ -90,7 +90,7 @@ public class GraphFrame extends GraphAbstractFrame{
         JMenuBar menuBar = new JMenuBar();
         JMenu mainMenu = new JMenu("Actions");
         JMenuItem loadDirected = new JMenuItem("Load directed");
-        JMenuItem loadUnDirected = new JMenuItem("Loid undirected");
+        JMenuItem loadUnDirected = new JMenuItem("Load undirected");
         JMenuItem loadRandom = new JMenuItem("Load random");
         JMenuItem clearAll = new JMenuItem("Clear all");
         
@@ -526,6 +526,7 @@ public class GraphFrame extends GraphAbstractFrame{
         String edgeName = GraphEdge.generateName(nameOne, nameTwo);
         graphVisualPanel.modifyEdgeColor(edgeName, color);
     }
+    
     /**
      * Create and add a vertex to the graph panel.
      * 

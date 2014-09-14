@@ -9,14 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import static java.lang.System.out;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Queue;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -49,6 +44,7 @@ public abstract class GraphControl implements GraphListener{
     
     /**
      * Get the current instance of GraphControl.
+     * @param verbose
      * @return 
      */
     public static GraphControl getControl(boolean verbose){

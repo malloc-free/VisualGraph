@@ -30,6 +30,7 @@ public class GraphMessage {
     
     /**
      * Constructor takes string command.
+     * @param command
      */
     public GraphMessage(String command){
         messages = new HashMap<>();

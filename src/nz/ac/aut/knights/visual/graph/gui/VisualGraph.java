@@ -6,9 +6,11 @@ package nz.ac.aut.knights.visual.graph.gui;
 
 import java.awt.Color;
 import nz.ac.aut.knights.visual.graph.api.GraphControl;
+import nz.ac.aut.knights.visual.graph.api.GraphControlListener;
 import nz.ac.aut.knights.visual.graph.api.GraphMessage;
 import nz.ac.aut.knights.visual.graph.api.GraphMessage.EnumKeyValue;
-import static nz.ac.aut.knights.visual.graph.api.GraphViewCommands.*;
+import nz.ac.aut.knights.visual.graph.api.GraphModelCommand;
+import nz.ac.aut.knights.visual.graph.api.GraphViewCommand;
 
 /**
  *
@@ -34,30 +36,37 @@ public class VisualGraph {
             }
         });
         
-//        Board board = new Board(7, 7);
-//        Knight k = new Knight();
-//        board.generateMoves(k);
-//        
-//        k.setFirstSquare(board.getSquare(new Position(0, 0)));
-//        
-//        addVertex(k.getCurrentSquare().toString());
-//        
-//        CallBack back = new CallBack(){
-//
-//            @Override
-//            public void modified(Enum modification, EnumKeyValue... values) {
-//                sendMessage(modification, values);
-//            }  
-//        };
-//        
-//        while(true){
-//            Thread.sleep(1000);
-//        }
-//       
-        
         addVertex("1");
         addVertex("2");
         addEdge("1", "2");
+        addVertex("3");
+        addEdge("2", "3");
+        
+        control.addGraphListener(GraphModelCommand.M_VERTEX_ADD.toString(), 
+                new GraphControlListener(){
+
+            @Override
+            public void alertControlListener(GraphMessage message) {
+                final String name = (String)message.get(GraphModelCommand.M_VERTEX_NAME.toString());
+                final double xPos = (double)message.get(GraphModelCommand.M_VERTEX_X_POS.toString());
+                final double yPos = (double)message.get(GraphModelCommand.M_VERTEX_Y_POS.toString());
+                
+                sendMessage(GraphViewCommand.VERTEX_ADD, new EnumKeyValue(){{
+                    keyEnum = GraphViewCommand.VERTEX_NAME;
+                    object = name;
+                }}, new EnumKeyValue(){{
+                    keyEnum = GraphViewCommand.VERTEX_X_POS;
+                    object = xPos;
+                }}, new EnumKeyValue() {{
+                    keyEnum = GraphViewCommand.VERTEX_Y_POS;
+                    object = yPos;
+                }}
+                
+                );
+            }
+        
+        });
+        
     }
     
     public interface CallBack{
@@ -77,13 +86,13 @@ public class VisualGraph {
     }
     
     public static void modifyColor(final Color color, final String name){
-        GraphMessage messageTemp = new GraphMessage(VERTEX_MODIFY_COLOR);
+        GraphMessage messageTemp = new GraphMessage(GraphViewCommand.VERTEX_MODIFY_COLOR);
         
         messageTemp.add(new EnumKeyValue[]{
-            new EnumKeyValue(){{ keyEnum = VERTEX_COLOR; 
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.VERTEX_COLOR; 
             object = color.getColorComponents(null); }},
             
-            new EnumKeyValue(){{ keyEnum = VERTEX_NAME;
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.VERTEX_NAME;
             object = name; }}
         });
         
@@ -92,16 +101,16 @@ public class VisualGraph {
     
     public static void modifyEdgeColor(final Color color, final String vOne,
             final String vTwo){
-        GraphMessage messageTemp = new GraphMessage(EDGE_MODIFY);
+        GraphMessage messageTemp = new GraphMessage(GraphViewCommand.EDGE_MODIFY);
         
         messageTemp.add(new EnumKeyValue[]{
-            new EnumKeyValue(){{ keyEnum = EDGE_COLOR; 
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.EDGE_COLOR; 
             object = color.getColorComponents(null); }},
             
-            new EnumKeyValue(){{ keyEnum = EDGE_VERTEX_ONE;
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.EDGE_VERTEX_ONE;
             object = vOne; }},
                 
-            new EnumKeyValue(){{ keyEnum = EDGE_VERTEX_TWO;
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.EDGE_VERTEX_TWO;
             object = vTwo;
             }}
         });
@@ -111,31 +120,31 @@ public class VisualGraph {
     
     
     public static void removeVertex(final String name){
-        GraphMessage messageTemp = new GraphMessage(VERTEX_DELETE);
+        GraphMessage messageTemp = new GraphMessage(GraphViewCommand.VERTEX_DELETE);
         
         messageTemp.add(new EnumKeyValue(){{
-            keyEnum = VERTEX_NAME; object = name;
+            keyEnum = GraphViewCommand.VERTEX_NAME; object = name;
         }});
         
         GraphControl.getControl(false).alertGraphListener(messageTemp);
     }
     
     public static void addVertex(final String name){
-        GraphMessage messageTemp = new GraphMessage(VERTEX_ADD);
+        GraphMessage messageTemp = new GraphMessage(GraphViewCommand.VERTEX_ADD);
         
         messageTemp.add(new EnumKeyValue[]{
-            new EnumKeyValue(){{ keyEnum = VERTEX_NAME; object = name;}}
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.VERTEX_NAME; object = name;}}
         });
         
         GraphControl.getControl(true).alertGraphListener(messageTemp);
     }
     
     public static void addEdge(final String nameOne, final String nameTwo){
-         GraphMessage messageTemp = new GraphMessage(EDGE_ADD);
+         GraphMessage messageTemp = new GraphMessage(GraphViewCommand.EDGE_ADD);
         
         messageTemp.add(new EnumKeyValue[]{
-            new EnumKeyValue(){{ keyEnum = EDGE_VERTEX_ONE; object = nameOne;}},
-            new EnumKeyValue(){{ keyEnum = EDGE_VERTEX_TWO; object = nameTwo;}}
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.EDGE_VERTEX_ONE; object = nameOne;}},
+            new EnumKeyValue(){{ keyEnum = GraphViewCommand.EDGE_VERTEX_TWO; object = nameTwo;}}
         });
 
         GraphControl.getControl(true).alertGraphListener(messageTemp);

@@ -8,8 +8,8 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import nz.ac.aut.knights.visual.graph.api.GraphMessage;
-import nz.ac.aut.knights.visual.graph.api.GraphViewCommands;
-import static nz.ac.aut.knights.visual.graph.api.GraphViewCommands.*;
+import nz.ac.aut.knights.visual.graph.api.GraphViewCommand;
+import static nz.ac.aut.knights.visual.graph.api.GraphViewCommand.*;
 import nz.ac.aut.knights.visual.graph.gui.panel.GraphEdge;
 import nz.ac.aut.knights.visual.graph.gui.panel.GraphVertex;
 /**
@@ -20,11 +20,11 @@ public enum ObjectBuilder {
     VERTEX (GraphVertex.class, VERTEX_ADD, VERTEX_NAME, VERTEX_X_POS, VERTEX_Y_POS,  VERTEX_COLOR),
     EDGE (GraphEdge.class, EDGE_ADD, EDGE_VERTEX_ONE, EDGE_VERTEX_TWO);
     
-    private GraphViewCommands command;
-    private GraphViewCommands[] parameters;
+    private GraphViewCommand command;
+    private GraphViewCommand[] parameters;
     private Class builderClass;
     
-    private ObjectBuilder(Class builderClass, GraphViewCommands command, GraphViewCommands... parameters){
+    private ObjectBuilder(Class builderClass, GraphViewCommand command, GraphViewCommand... parameters){
         this.command = command;
         this.parameters = parameters;
         this.builderClass = builderClass;
@@ -40,7 +40,7 @@ public enum ObjectBuilder {
         ObjectBuilder retBuilder = null;
         
         for(ObjectBuilder b : values()){
-            if(b.command.equals(GraphViewCommands.valueOf(testCommand))){
+            if(b.command.equals(GraphViewCommand.valueOf(testCommand))){
                 retBuilder = b;
                 break;
             }
@@ -64,7 +64,7 @@ public enum ObjectBuilder {
         
         List<Class> classList = new ArrayList<>();
         
-        for(GraphViewCommands c : parameters){
+        for(GraphViewCommand c : parameters){
             Object o;
             if((o = message.get(c.toString())) != null){
                 obList.add(o);

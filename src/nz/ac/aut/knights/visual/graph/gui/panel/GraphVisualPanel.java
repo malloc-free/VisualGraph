@@ -44,33 +44,33 @@ import nz.ac.aut.knights.visual.graph.gui.panel.GraphEdge.Arrow;
 public class GraphVisualPanel extends GraphAbstractPanel{
     
     //The layered pane used by this GraphVisualPanel.
-    private JLayeredPane layerPane;
+    private final JLayeredPane layerPane;
     //The list of vertices to be painted.
-    private Map<String, GraphShape> vertices;
+    private final Map<String, GraphShape> vertices;
     //The list of edges between vertices
-    private Map<String, GraphEdge> edges;
+    private final Map<String, GraphEdge> edges;
     //The MouseAdapter used to capture mouse events
-    private GraphMouse graphMouse;
+    private final GraphMouse graphMouse;
     //X co-ordinate label
-    private JLabel xOrd;
+    private final JLabel xOrd;
     //Y co-ordinate label
-    private JLabel yOrd;
+    private final JLabel yOrd;
     //The selected vertex
-    private JLabel vertex;
+    private final JLabel vertex;
     //The x location currently pressed
-    private JLabel pressedX;
+    private final JLabel pressedX;
     //The y location currently pressed
-    private JLabel pressedY;
+    private final JLabel pressedY;
     //Shows if the mouse button is pressed
-    private JLabel pressed;
+    private final JLabel pressed;
     //The name of the current vertex
-    private String currentVertex;
-    //The popup menu for rightclicks
-    private JPopupMenu popupMenu;
+    private final JPopupMenu popupMenu;
     //The select box
     private Rectangle2D.Double selectBox;
     //The currenly selected verticies.
-    private List<GraphVertex> selectedVertices;
+    private final List<GraphVertex> selectedVertices;
+    //The current selected vertex.
+    private GraphVertex currentVertex;
     
     /**
      * Constructor for the panel. 
@@ -195,7 +195,6 @@ public class GraphVisualPanel extends GraphAbstractPanel{
      * Remove the specified vertex.
      * 
      * @param name - The vertex to be removed.
-     * @return - True if present and removed.
      */
     public void removeVertex(String name){
         vertices.remove(name);
@@ -299,23 +298,13 @@ public class GraphVisualPanel extends GraphAbstractPanel{
      */
     public void moveShape(String name, Point2D.Double point){
         
-        GraphShape v = vertices.get(currentVertex);
+        GraphShape v = vertices.get(name);
         
         if(v != null){
-            v.updatePoint(point);
-           
+            v.updatePoint(point);     
         }
         
         this.repaint();
-    }
-    
-    /**
-     * Move the currently selected shape.
-     * 
-     * @param point 
-     */
-    public void moveShape(Point2D.Double point){
-        moveShape(currentVertex, point);
     }
     
     /**
@@ -385,12 +374,12 @@ public class GraphVisualPanel extends GraphAbstractPanel{
      * @param point - The point to test.
      * @return - A vertex or null.
      */
-    private String selectedVertex(Point point){
-        String retV = null;
+    private GraphVertex selectedVertex(Point point){
+        GraphVertex retV = null;
         
         for(GraphShape v : vertices.values()){
             if(v.containsPoint(point)){
-                retV = v.getName();
+                retV = (GraphVertex)v;
                 break;
             }
         }
@@ -416,12 +405,10 @@ public class GraphVisualPanel extends GraphAbstractPanel{
      * @param point - The point of reference to move by.
      */
     private void moveSelectedVerticies(double x, double y){
-        double dX = ((GraphVertex)vertices.get(currentVertex)).getPoint().x - x;
-        double dY = ((GraphVertex)vertices.get(currentVertex)).getPoint().y - y;
         
         for(GraphVertex v : selectedVertices){
             
-            v.modifyPoint(dX, dY);
+            v.modifyPoint(x, y);
         }
         
         this.repaint();
@@ -450,25 +437,7 @@ public class GraphVisualPanel extends GraphAbstractPanel{
             v.setLayer(5);
         }
     }
-    
-    /**
-     * Reset the given vertex to its default layer value and deselect.
-     * 
-     * @param name - The name of the vertex to reset.
-     */
-    private void resetVertex(){
-        resetVertex((GraphVertex)vertices.get(currentVertex));
-    }
-    
-    /**
-     * Set the given vertex as selected.
-     * 
-     * @param name - The name of the vertex to select. 
-     */
-    private void setVertexSelected(){
-        setVertexSelected((GraphVertex)vertices.get(currentVertex));    
-    }
-    
+   
     /**
      * Set the supplied vertex selected.
      * 
@@ -478,27 +447,7 @@ public class GraphVisualPanel extends GraphAbstractPanel{
         v.setLayer(10);
         v.setSelected(true);
     }
-    
-    /**
-     * Get the x point for the given vertex.
-     * 
-     * @param name
-     * @return 
-     */
-    private double getVertexX(){
-        return ((GraphVertex)vertices.get(currentVertex)).getPoint().x;
-    }
-    
-    /**
-     * Get the y point for the given vertex.
-     * 
-     * @param name
-     * @return 
-     */
-    private double getVertexY(){
-        return ((GraphVertex)vertices.get(currentVertex)).getPoint().y;
-    }
-    
+  
     /**
      * 
      * @param message 
@@ -563,7 +512,12 @@ public class GraphVisualPanel extends GraphAbstractPanel{
         @Override
         public void actionPerformed(ActionEvent e) {
             MenuAction action = actions.get(e.getActionCommand());
-            action.action(e.getActionCommand(), currentVertex);
+            if(action != null) {
+                action.action(e.getActionCommand(), currentVertex.getName());
+            }
+            else {
+                System.out.println("No action set for command");
+            }
         }
         
         @Override
@@ -589,15 +543,13 @@ public class GraphVisualPanel extends GraphAbstractPanel{
         //Determine if the mouse is pressed.
         boolean mousePressed;
         //The x value where the selected vertex was grabbed
-        double xVal;
-        //The y value where the selected vertex was grabbed
-        double yVal;
-        //Name of the current selected vertex.
         double selectBoxX;
         double selectBoxY;
         
+        Point lastPoint;
         int mouseButton;
-        
+        boolean groupSelection;
+        boolean groupAction;
         /**
          * Constructor sets up fields.
          */
@@ -605,8 +557,8 @@ public class GraphVisualPanel extends GraphAbstractPanel{
             currentVertex = null;
             mousePressed = false;
             mouseButton = 0;
-            xVal = 0;
-            yVal = 0;
+            groupSelection = false;
+            groupAction = false;
         }
         
         /**
@@ -630,43 +582,26 @@ public class GraphVisualPanel extends GraphAbstractPanel{
          * @param e - The mouse event 
          */
         public void buttonPressed(MouseEvent e){
-            Point p = e.getPoint();
+            lastPoint = e.getPoint();  
+           
+            currentVertex = selectedVertex(lastPoint);
             
-            String tempVertex = selectedVertex(p);
-            
-            
-            if(selectedVertices.isEmpty() && 
-                    tempVertex != null && !tempVertex.equals(currentVertex)){
-                if(currentVertex != null)
-                    resetVertex();
-                
-                currentVertex = tempVertex;
-                setVertexSelected();
-                
-            }
-            else if(selectedVertices.isEmpty() && 
-                    currentVertex != null && !currentVertex.equals(tempVertex)){
-                resetVertex();
-                currentVertex = null;
-            }
-            else if(tempVertex == null){
+            if(currentVertex == null) {
+                groupSelection = false;
+                groupAction = false;
                 deselectVertices();
-                selectBox = new Rectangle2D.Double(p.x, p.y, 1, 1);
-                selectBoxX = p.x;
-                selectBoxY = p.y;
+                selectBox = new Rectangle2D.Double(lastPoint.x, lastPoint.y, 1, 1);
+                selectBoxX = lastPoint.x;
+                selectBoxY = lastPoint.y;
             }
-            else{
-               currentVertex = tempVertex; 
+            else if(!groupSelection || !selectedVertices.contains(currentVertex)) {
+                deselectVertices();
+                setVertexSelected(currentVertex);
+                selectedVertices.add(currentVertex);
             }
-               
-            if(currentVertex != null){
-                xVal = p.x - getVertexX();
-                yVal = p.y - getVertexY();
-            }
-            
-                
+          
             mousePressed = true;
-            updatePressedLabels(p);
+            updatePressedLabels(lastPoint);
             repaint();
         }
         
@@ -678,6 +613,7 @@ public class GraphVisualPanel extends GraphAbstractPanel{
         public void button2Pressed(MouseEvent e){
             buttonPressed(e);
             popupMenu.show(e.getComponent(), e.getX(), e.getY());
+            groupAction = groupSelection;
         }
       
         /**
@@ -691,8 +627,23 @@ public class GraphVisualPanel extends GraphAbstractPanel{
             updatePressedLabels(new Point(0,0));
             
             if(selectBox != null){
+                if(!selectedVertices.isEmpty()) {
+                    groupSelection = true;
+                }
+                
                 selectBox = null;
             }
+            else if(!groupAction){
+                deselectVertices();
+                
+                if(currentVertex != null) {
+                    setVertexSelected(currentVertex);
+                    selectedVertices.add(currentVertex);
+                }
+            }
+            
+            groupAction = false;
+            currentVertex = null;
             
             repaint();
         }
@@ -706,11 +657,9 @@ public class GraphVisualPanel extends GraphAbstractPanel{
             Point p = e.getPoint();
             updateLabels(p);
             
-            
             if(mousePressed){
                 updatePressedLabels(p);
             }
-           
         }
         
         /**
@@ -720,23 +669,19 @@ public class GraphVisualPanel extends GraphAbstractPanel{
         @Override
         public void mouseDragged(MouseEvent e){
             Point p = e.getPoint();
-            double xTrans = p.x - xVal;
-            double yTrans = p.y - yVal;
-            Point2D.Double dPoint = new Point2D.Double(xTrans, yTrans);
+            double xTrans = p.x - lastPoint.x;
+            double yTrans = p.y - lastPoint.y;
+            lastPoint = p;
             
-            if(currentVertex != null && mouseButton == MouseEvent.BUTTON1){ 
-                
-                moveShape(dPoint);
-            }
-            
+            if(currentVertex != null && mouseButton == MouseEvent.BUTTON1){            
+                moveSelectedVerticies(xTrans, yTrans);
+                groupAction = groupSelection;
+            }     
             else if(selectBox != null){
                 changeSelectBox(p);
                 deselectVertices();
                 selectedVertices();
                 repaint();
-            }
-            else if(currentVertex != null){
-                moveSelectedVerticies(xTrans, yTrans);
             }
             
             updatePressedLabels(p);
@@ -788,7 +733,7 @@ public class GraphVisualPanel extends GraphAbstractPanel{
                     pressedY.setText("prY = " + update.y);
                     pressed.setText("pressed = " + mousePressed);
                     if(currentVertex != null){
-                        vertex.setText("vertex = " + currentVertex);
+                        vertex.setText("vertex = " + currentVertex.getName());
                     }
                 }
             });

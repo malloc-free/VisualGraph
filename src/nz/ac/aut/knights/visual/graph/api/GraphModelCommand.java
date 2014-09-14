@@ -8,11 +8,13 @@ package nz.ac.aut.knights.visual.graph.api;
  *
  * @author michael
  */
-public enum GraphModelCommands {
+public enum GraphModelCommand {
     M_VERTEX_LIST, 
     M_VERTEX_NO_,
     M_VERTEX_CLICKED,
     M_VERTEX_NAME,
+    M_VERTEX_X_POS,
+    M_VERTEX_Y_POS,
     M_VERTEX_MOVED,
     M_R_CLICK_MENU_ACTION,
     OPEN_FILE,
@@ -26,5 +28,9 @@ public enum GraphModelCommands {
     FIND_PATH_LIST,
     FIND_EXECUTE,
     RETURN_COMMAND,
-    FIND_PATH_START;
+    FIND_PATH_START,
+    M_DELETE_VERTEX,
+    M_DELETE_EDGE,
+    M_VERTEX_ADD,
+    M_EDGE_ADD;
 }
